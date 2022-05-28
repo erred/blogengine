@@ -1,0 +1,6 @@
+github.com/yuin/goldmark v1.4.12 h1:6hffw6vALvEDqJ19dOJvJKOoAOKe4NDaTqvd2sktGN0=
+github.com/yuin/goldmark v1.4.12/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
+go.seankhliao.com/webstyle v0.0.0-20220528094321-746817914b38 h1:fcCMtpPa2m0xREL+3uzf3MLncp3JOQiroV4zIwmwSa0=
+go.seankhliao.com/webstyle v0.0.0-20220528094321-746817914b38/go.mod h1:w6xuDEA1PA+MNe5ePY6PuFVuZJqTCM8q6rS/KYHQgks=
+golang.org/x/exp v0.0.0-20220518171630-0b5c67f07fdf h1:oXVg4h2qJDd9htKxb5SCpFBHLipW6hXmL3qpUixS2jw=
+golang.org/x/exp v0.0.0-20220518171630-0b5c67f07fdf/go.mod h1:yh0Ynu2b5ZUe3MQfp2nM0ecK7wsgouWTDN0FNeJuIys=
