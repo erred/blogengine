@@ -4,4 +4,4 @@ steps:
     commands:
       - docker build -t ghcr.io/seankhliao/blogengine .
       - docker push ghcr.io/seankhliao/blogengine
-      - cosign sign --key ~/.ssh/cosign.key ghcr.io/seankhliao/blogengine
+      - COSIGN_PASSWORD= cosign sign --key ~/.ssh/cosign.key ghcr.io/seankhliao/blogengine
