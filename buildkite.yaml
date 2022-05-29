@@ -1,0 +1,7 @@
+steps:
+  - label: update gotip
+    depends_on: ~
+    commands:
+      - docker build -t ghcr.io/seankhliao/blogengine .
+      - docker push ghcr.io/seankhliao/blogengine
+      - cosign sign --key ~/.ssh/cosign.key ghcr.io/seankhliao/blogengine
