@@ -1,16 +1,14 @@
 steps:
-  - id: build
+  - id: build-push
     name: 'gcr.io/cloud-builders/docker'
+    entrypoint: /bin/sh
     args:
-      - 'build'
-      - '-t=us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest'
-      - '.'
+      - -c
+      - |
+        set -ex
 
-  - id: push-latest
-    name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest'
+        docker build -t -t=us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest .
+        docker push -t=us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest
 
   - id: sign-latest
     name: 'gcr.io/projectsigstore/cosign'
