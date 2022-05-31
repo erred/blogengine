@@ -5,7 +5,8 @@ ENV CGO_ENABLED=0 \
 COPY go.* ./
 RUN go mod download
 COPY . .
-RUN go build -ldflags='-s -w' .
+RUN go test -vet=all ./... && \
+    go build -ldflags='-s -w' .
 
 FROM gcr.io/distroless/static
 COPY --from=build /workspace/blogengine /bin/blogengine
