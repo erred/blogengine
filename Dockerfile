@@ -1,4 +1,4 @@
-FROM us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest AS build
+FROM us-central1-docker.pkg.dev/com-seankhliao/build/gotip:latest AS build
 WORKDIR /workspace
 ENV CGO_ENABLED=0 \
     GOFLAGS=-trimpath
