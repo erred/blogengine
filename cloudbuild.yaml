@@ -1,0 +1,23 @@
+steps:
+  - id: build
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t=us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest'
+      - '.'
+
+  - id: push-latest
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest'
+
+  - id: sign-latest
+    name: 'gcr.io/projectsigstore/cosign'
+    env:
+      - 'TUF_ROOT=/tmp' # cosign tries to create $HOME/.sigstore
+      - 'COSIGN_EXPERIMENTAL=1'
+      - 'GOOGLE_SERVICE_ACCOUNT_NAME=cosign-signer@com-seankhliao.iam.gserviceaccount.com'
+    args:
+      - 'sign'
+      - 'us-central1-docker.pkg.dev/com-seankhliao/build/blogengine:latest'
