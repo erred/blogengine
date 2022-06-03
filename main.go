@@ -64,6 +64,12 @@ func renderSingle(render webstyle.Renderer, in, out string) error {
 		return fmt.Errorf("open src=%v: %w", in, err)
 	}
 	defer inFile.Close()
+	if dir := filepath.Dir(out); dir != "." {
+		err = os.MkdirAll(dir, 0o755)
+		if err != nil {
+			return fmt.Errorf("mkdir dst=%v: %w", dir, err)
+		}
+	}
 	outFile, err := os.Create(out)
 	if err != nil {
 		return fmt.Errorf("open dst=%v: %w", out, err)
