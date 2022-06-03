@@ -17,10 +17,22 @@ import (
 
 func main() {
 	var in, out, gtm, baseUrl string
+	var render webstyle.Renderer
 	flag.StringVar(&in, "src", "src", "source directory/file")
 	flag.StringVar(&out, "dst", "dst", "destination directory/file")
 	flag.StringVar(&gtm, "gtm", "", "google tag manager id")
 	flag.StringVar(&baseUrl, "base-url", "", "base url, ex: https://seankhliao.com")
+	flag.Func("style", "render style, default depends on file|directory: compact|full", func(s string) error {
+		switch s {
+		case "compact":
+			render = webstyle.NewRenderer(webstyle.TemplateCompact)
+		case "full":
+			render = webstyle.NewRenderer(webstyle.TemplateFull)
+		default:
+			return fmt.Errorf("unknown style %s, not one of compact|full", s)
+		}
+		return nil
+	})
 	flag.Parse()
 
 	fi, err := os.Stat(in)
@@ -28,19 +40,25 @@ func main() {
 		log.Fatalln("stat src", in, err)
 	}
 	if !fi.IsDir() {
-		err := renderSingle(in, out)
+		if render.Template == nil {
+			render = webstyle.NewRenderer(webstyle.TemplateCompact)
+		}
+		err := renderSingle(render, in, out)
 		if err != nil {
 			log.Fatalln(err)
 		}
 	} else {
-		err := renderMulti(in, out, gtm, baseUrl)
+		if render.Template == nil {
+			render = webstyle.NewRenderer(webstyle.TemplateFull)
+		}
+		err := renderMulti(render, in, out, gtm, baseUrl)
 		if err != nil {
 			log.Fatalln(err)
 		}
 	}
 }
 
-func renderSingle(in, out string) error {
+func renderSingle(render webstyle.Renderer, in, out string) error {
 	inFile, err := os.Open(in)
 	if err != nil {
 		return fmt.Errorf("open src=%v: %w", in, err)
@@ -50,7 +68,6 @@ func renderSingle(in, out string) error {
 	if err != nil {
 		return fmt.Errorf("open dst=%v: %w", out, err)
 	}
-	render := webstyle.NewRenderer(webstyle.TemplateCompact)
 	err = render.Render(outFile, inFile, webstyle.Data{})
 	if err != nil {
 		return fmt.Errorf("render: %w", err)
@@ -58,8 +75,7 @@ func renderSingle(in, out string) error {
 	return nil
 }
 
-func renderMulti(in, out, gtm, baseUrl string) error {
-	render := webstyle.NewRenderer(webstyle.TemplateFull)
+func renderMulti(render webstyle.Renderer, in, out, gtm, baseUrl string) error {
 	var siteMapTxt bytes.Buffer
 	err := filepath.WalkDir(in, func(inPath string, d fs.DirEntry, err error) error {
 		if err != nil {
