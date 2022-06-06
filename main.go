@@ -160,7 +160,7 @@ func renderMulti(render webstyle.Renderer, in, out, gtm, baseUrl string) error {
 		return fmt.Errorf("walk src=%v: %w", in, err)
 	}
 
-	err = os.WriteFile(filepath.Join(in, "sitemap.txt"), siteMapTxt.Bytes(), 0o644)
+	err = os.WriteFile(filepath.Join(out, "sitemap.txt"), siteMapTxt.Bytes(), 0o644)
 	if err != nil {
 		return fmt.Errorf("write sitemap.txt: %w", err)
 	}
