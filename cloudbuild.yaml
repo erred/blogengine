@@ -16,18 +16,21 @@ steps:
   - id: build-push
     name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
     waitFor: ['-']
-    entrypoint: 'ko'
+    entrypoint: 'sh'
     env:
       - 'CGO_ENABLED=0'
       - 'GOFLAGS=-trimpath'
       - 'KO_DOCKER_REPO=${_REGISTRY}'
       - 'GGCR_EXPERIMENT_ESTARGZ=1'
     args:
-      - 'build'
-      - '--base-import-paths'
-      - '--platform=linux/amd64,linux/arm64'
-      - '--image-refs=.image.txt'
-      - '.'
+      - '-c'
+      - |
+        ko build --base-import-paths --platform=linux/amd64,linux/arm64 --image-refs=.image.txt . \&& chmod +r .image.txt
+      # - 'build'
+      # - '--base-import-paths'
+      # - '--platform=linux/amd64,linux/arm64'
+      # - '--image-refs=.image.txt'
+      # - '.'
 
   - id: sign
     name: 'gcr.io/projectsigstore/cosign'
