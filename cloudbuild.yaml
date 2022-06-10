@@ -23,6 +23,7 @@ steps:
       - 'KO_DOCKER_REPO=${_REGISTRY}'
       - 'GGCR_EXPERIMENT_ESTARGZ=1'
     args:
+      - 'build'
       - '--base-import-paths'
       - '--platform=linux/amd64,linux/arm64'
       - '--image-refs=.image.txt'
