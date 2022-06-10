@@ -1,17 +1,32 @@
 steps:
-  - id: build-push
-    name: 'gcr.io/kaniko-project/executor'
+  - id: staticcheck
+    name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
+    waitFor: ['-']
+    entrypoint: 'staticcheck'
     args:
-      - '--cache'
-      - '--cache-ttl=168h'
-      - '--context=.'
-      - '--destination=${_REGISTRY}/${_APP}:${SHORT_SHA}'
-      - '--destination=${_REGISTRY}/${_APP}:latest'
-      - '--image-name-with-digest-file=.image.txt'
-      - '--reproducible'
-      - '--single-snapshot'
-      - '--use-new-run'
-      - '--ignore-var-run'
+      - './...'
+  - id: test
+    name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
+    waitFor: ['-']
+    entrypoint: 'go'
+    args:
+      - 'test'
+      - '-vet=all'
+      - './...'
+  - id: build-push
+    name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
+    waitFor: ['-']
+    entrypoint: 'ko'
+    env:
+      - 'CGO_ENABLED=0'
+      - 'GOFLAGS=-trimpath'
+      - 'KO_DOCKER_REPO=${_REGISTRY}'
+      - 'GGCR_EXPERIMENT_ESTARGZ=1'
+    args:
+      - '--base-import-paths'
+      - '--platform=linux/amd64,linux/arm64'
+      - '--image-refs=.image.txt'
+      - '.'
 
   - id: sign
     name: 'gcr.io/projectsigstore/cosign'
@@ -25,5 +40,4 @@ steps:
       - 'cosign sign --force $(head -n 1 .image.txt)'
 
 substitutions:
-  _APP: 'blogengine'
   _REGISTRY: 'us-central1-docker.pkg.dev/com-seankhliao/build'
