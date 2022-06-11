@@ -1,18 +1,18 @@
 steps:
-  - id: staticcheck
-    name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
-    waitFor: ['-']
-    entrypoint: 'staticcheck'
-    args:
-      - './...'
-  - id: test
-    name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
-    waitFor: ['-']
-    entrypoint: 'go'
-    args:
-      - 'test'
-      - '-vet=all'
-      - './...'
+  # - id: staticcheck
+  #   name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
+  #   waitFor: ['-']
+  #   entrypoint: 'staticcheck'
+  #   args:
+  #     - './...'
+  # - id: test
+  #   name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
+  #   waitFor: ['-']
+  #   entrypoint: 'go'
+  #   args:
+  #     - 'test'
+  #     - '-vet=all'
+  #     - './...'
   - id: build-push
     name: 'us-central1-docker.pkg.dev/com-seankhliao/build/gotip'
     waitFor: ['-']
@@ -26,6 +26,8 @@ steps:
       - '-c'
       - |
         set -ex \
+        && go test -vet=all ./... \
+        && staticcheck ./... \
         && ko build -B --platform=linux/amd64 --image-refs=.image.txt . \
         && chmod +r .image.txt
       # - 'build'
