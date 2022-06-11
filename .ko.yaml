@@ -1,0 +1,2 @@
+# override default :nonroot to allow writing
+defaultBaseImage: gcr.io/distroless/static
