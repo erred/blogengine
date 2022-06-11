@@ -25,7 +25,9 @@ steps:
     args:
       - '-c'
       - |
-        ko build --base-import-paths --platform=linux/amd64,linux/arm64 --image-refs=.image.txt . \&& chmod +r .image.txt
+        set -ex \
+        && ko build -B --platform=linux/amd64,linux/arm64 --image-refs=.image.txt . \
+        && chmod +r .image.txt
       # - 'build'
       # - '--base-import-paths'
       # - '--platform=linux/amd64,linux/arm64'
