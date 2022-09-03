@@ -1,6 +1,6 @@
-github.com/yuin/goldmark v1.4.12 h1:6hffw6vALvEDqJ19dOJvJKOoAOKe4NDaTqvd2sktGN0=
-github.com/yuin/goldmark v1.4.12/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
-go.seankhliao.com/webstyle v0.5.0 h1:/0kH4xPiHEqNcgL4YvKYAi2P9rdziReLK4bn9Ea5kbo=
-go.seankhliao.com/webstyle v0.5.0/go.mod h1:w6xuDEA1PA+MNe5ePY6PuFVuZJqTCM8q6rS/KYHQgks=
-golang.org/x/exp v0.0.0-20220609121020-a51bd0440498 h1:TF0FvLUGEq/8wOt/9AV1nj6D4ViZGUIGCMQfCv7VRXY=
-golang.org/x/exp v0.0.0-20220609121020-a51bd0440498/go.mod h1:yh0Ynu2b5ZUe3MQfp2nM0ecK7wsgouWTDN0FNeJuIys=
+github.com/yuin/goldmark v1.4.14 h1:jwww1XQfhJN7Zm+/a1ZA/3WUiEBEroYFNTiV3dKwM8U=
+github.com/yuin/goldmark v1.4.14/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
+go.seankhliao.com/webstyle v0.5.1 h1:fD/jQaDlcmLWGl/+v4cuUM0eG2CAwfh47hUQrWD5UqU=
+go.seankhliao.com/webstyle v0.5.1/go.mod h1:3gdlViinUpkRH97uBhMrXLYKlT02pQJ6vacogLt4P+Y=
+golang.org/x/exp v0.0.0-20220827204233-334a2380cb91 h1:tnebWN09GYg9OLPss1KXj8txwZc6X6uMr6VFdcGNbHw=
+golang.org/x/exp v0.0.0-20220827204233-334a2380cb91/go.mod h1:cyybsKvd6eL0RnXn6p/Grxp8F5bW7iYuBgsNCOHpMYE=
