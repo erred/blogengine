@@ -139,9 +139,14 @@ func renderMulti(render webstyle.Renderer, in, out, gtm, baseUrl string) error {
 			main = buf.String()
 		}
 		if strings.HasSuffix(inPath, ".md") {
+			var desc string
+			if relPath == "index.md" { // root index
+				desc = `hi, i'm sean, available for adoption by extroverts for the low, low cost of your love.`
+			}
 			err = render.Render(outFile, inFile, webstyle.Data{
 				GTM:  gtm,
 				Main: main,
+				Desc: desc,
 			})
 			if err != nil {
 				return fmt.Errorf("render src=%v: %w", inPath, err)
