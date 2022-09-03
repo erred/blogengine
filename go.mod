@@ -3,7 +3,7 @@ module go.seankhliao.com/blogengine
 go 1.19
 
 require (
-	go.seankhliao.com/webstyle v0.5.1
+	go.seankhliao.com/webstyle v0.5.2
 	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 )
 
