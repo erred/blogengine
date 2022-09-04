@@ -2,185 +2,80 @@ package main
 
 import (
 	"bytes"
-	"flag"
+	"context"
+	_ "embed"
 	"fmt"
-	"io"
-	"io/fs"
-	"log"
 	"os"
-	"path/filepath"
-	"strings"
 
+	"github.com/go-logr/logr"
+	"github.com/iand/logfmtr"
 	"go.seankhliao.com/webstyle"
-	"golang.org/x/exp/slices"
+	"golang.org/x/term"
 )
 
 func main() {
-	var in, out, gtm, baseUrl string
+	log := logfmtr.NewWithOptions(logfmtr.Options{
+		Writer:   os.Stderr,
+		Colorize: term.IsTerminal(int(os.Stderr.Fd())),
+	})
+	ctx := context.Background()
+	ctx = logr.NewContext(ctx, log)
+
+	err := run(ctx, os.Args)
+	if err != nil {
+		log.Error(err, "run")
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context, args []string) error {
+	log := logr.FromContextOrDiscard(ctx)
+	conf, err := newConfig(ctx, args)
+	if err != nil {
+		return err
+	}
+
 	var render webstyle.Renderer
-	flag.StringVar(&in, "src", "src", "source directory/file")
-	flag.StringVar(&out, "dst", "dst", "destination directory/file")
-	flag.StringVar(&gtm, "gtm", "", "google tag manager id")
-	flag.StringVar(&baseUrl, "base-url", "", "base url, ex: https://seankhliao.com")
-	flag.Func("style", "render style, default depends on file|directory: compact|full", func(s string) error {
-		switch s {
-		case "compact":
-			render = webstyle.NewRenderer(webstyle.TemplateCompact)
-		case "full":
-			render = webstyle.NewRenderer(webstyle.TemplateFull)
-		default:
-			return fmt.Errorf("unknown style %s, not one of compact|full", s)
-		}
-		return nil
-	})
-	flag.Parse()
-
-	fi, err := os.Stat(in)
-	if err != nil {
-		log.Fatalln("stat src", in, err)
+	log.V(1).Info("setting renderer style", "style", conf.Render.Style)
+	switch conf.Render.Style {
+	case "compact":
+		render = webstyle.NewRenderer(webstyle.TemplateCompact)
+	case "full":
+		render = webstyle.NewRenderer(webstyle.TemplateFull)
+	default:
+		return fmt.Errorf("unknown renderer style: %s", conf.Render.Style)
 	}
+
+	fi, err := os.Stat(conf.Render.Source)
+	if err != nil {
+		log.Error(err, "stat source", "src", conf.Render.Source)
+		return err
+	}
+	var rendered map[string]*bytes.Buffer
 	if !fi.IsDir() {
-		if render.Template == nil {
-			render = webstyle.NewRenderer(webstyle.TemplateCompact)
-		}
-		err := renderSingle(render, in, out)
-		if err != nil {
-			log.Fatalln(err)
-		}
+		rendered, err = renderSingle(ctx, render, conf.Render.Source)
 	} else {
-		if render.Template == nil {
-			render = webstyle.NewRenderer(webstyle.TemplateFull)
-		}
-		err := renderMulti(render, in, out, gtm, baseUrl)
-		if err != nil {
-			log.Fatalln(err)
-		}
+		rendered, err = renderMulti(ctx, render, conf.Render.Source, conf.Render.GTM, conf.Render.BaseURL)
 	}
-}
+	if err != nil {
+		log.Error(err, "render source", "src", conf.Render.Source)
+		return err
+	}
 
-func renderSingle(render webstyle.Renderer, in, out string) error {
-	inFile, err := os.Open(in)
-	if err != nil {
-		return fmt.Errorf("open src=%v: %w", in, err)
-	}
-	defer inFile.Close()
-	if dir := filepath.Dir(out); dir != "." {
-		err = os.MkdirAll(dir, 0o755)
+	if conf.Render.Destination != "" {
+		err = writeRendered(ctx, conf.Render.Destination, rendered)
 		if err != nil {
-			return fmt.Errorf("mkdir dst=%v: %w", dir, err)
-		}
-	}
-	outFile, err := os.Create(out)
-	if err != nil {
-		return fmt.Errorf("open dst=%v: %w", out, err)
-	}
-	err = render.Render(outFile, inFile, webstyle.Data{})
-	if err != nil {
-		return fmt.Errorf("render: %w", err)
-	}
-	return nil
-}
-
-func renderMulti(render webstyle.Renderer, in, out, gtm, baseUrl string) error {
-	var siteMapTxt bytes.Buffer
-	err := filepath.WalkDir(in, func(inPath string, d fs.DirEntry, err error) error {
-		if err != nil {
+			log.Error(err, "write rendered result", "dst", conf.Render.Destination)
 			return err
 		}
-		relPath, err := filepath.Rel(in, inPath)
+	}
+	if conf.Firebase.SiteID != "" {
+		err = uploadFirebase(ctx, conf.Firebase, rendered)
 		if err != nil {
+			log.Error(err, "upload to firebase")
 			return err
 		}
-		outPath := filepath.Join(out, relPath)
-		if filepath.Ext(inPath) == ".md" {
-			outPath = outPath[:len(outPath)-3] + ".html"
-		}
-		if d.IsDir() {
-			return os.MkdirAll(outPath, 0o755)
-		}
-
-		inFile, err := os.Open(inPath)
-		if err != nil {
-			return fmt.Errorf("open src=%v: %w", inPath, err)
-		}
-		defer inFile.Close()
-		outFile, err := os.Create(outPath)
-		if err != nil {
-			return fmt.Errorf("open dst=%v: %w", outPath, err)
-		}
-		defer outFile.Close()
-
-		var main string
-		if strings.HasSuffix(relPath, "/index.md") { // exclude root index
-			dir := filepath.Dir(inPath)
-			des, err := os.ReadDir(dir)
-			if err != nil {
-				return fmt.Errorf("read dir=%v: %w", dir, err)
-			}
-			// reverse order
-			slices.SortFunc(des, func(a, b fs.DirEntry) bool { return a.Name() > b.Name() })
-			var buf bytes.Buffer
-			buf.WriteString("<ul>\n")
-			for _, de := range des {
-				if de.IsDir() || de.Name() == "index.md" {
-					continue
-				}
-				n := de.Name() // 120XX-YY-ZZ-some-title.md
-				if strings.HasPrefix(n, "120") && len(n) > 15 && n[11] == '-' {
-					fmt.Fprintf(&buf, `<li><time datetime="%s">%s</time> | <a href="%s">%s</a></li>`,
-						n[1:11],          // 20XX-YY-ZZ
-						n[:11],           // 120XX-YY-ZZ
-						n[:len(n)-3]+"/", // 120XX-YY-ZZ-some-title/
-						strings.ReplaceAll(n[12:len(n)-3], "-", " "), // some title
-					)
-				}
-			}
-			buf.WriteString("</ul>\n")
-			main = buf.String()
-		}
-		if strings.HasSuffix(inPath, ".md") {
-			var desc string
-			if relPath == "index.md" { // root index
-				desc = `hi, i'm sean, available for adoption by extroverts for the low, low cost of your love.`
-			}
-			err = render.Render(outFile, inFile, webstyle.Data{
-				GTM:  gtm,
-				Main: main,
-				Desc: desc,
-			})
-			if err != nil {
-				return fmt.Errorf("render src=%v: %w", inPath, err)
-			}
-
-			siteMapTxt.WriteString(baseUrl + canonicalPathFromRelPath(relPath) + "\n")
-		} else {
-			_, err = io.Copy(outFile, inFile)
-			if err != nil {
-				return fmt.Errorf("copy src=%v: %w", inPath, err)
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("walk src=%v: %w", in, err)
-	}
-
-	err = os.WriteFile(filepath.Join(out, "sitemap.txt"), siteMapTxt.Bytes(), 0o644)
-	if err != nil {
-		return fmt.Errorf("write sitemap.txt: %w", err)
 	}
 
 	return nil
-}
-
-func canonicalPathFromRelPath(in string) string {
-	in = strings.TrimSuffix(in, ".md")
-	in = strings.TrimSuffix(in, ".html")
-	in = strings.TrimSuffix(in, "index")
-	if in == "" {
-		return "/"
-	} else if in[len(in)-1] == '/' {
-		return "/" + in
-	}
-	return "/" + in + "/"
 }
