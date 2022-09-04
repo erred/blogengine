@@ -2,7 +2,7 @@ render: {
 	baseUrl: string
 	dst?:    string | *""
 	gtm?:    string
-	src:     "src"
+	src:     string | *"src"
 	style:   "compact" | *"full"
 }
 

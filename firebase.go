@@ -32,6 +32,9 @@ func uploadFirebase(ctx context.Context, conf ConfigFirebase, rendered map[strin
 		gzw.Close()
 		sum := hex.EncodeToString(summed.Sum(nil))
 
+		if p == singleKey {
+			p = "index.html"
+		}
 		pathToHash["/"+p] = sum
 		hashToGzip[sum] = zipped
 	}
