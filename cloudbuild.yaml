@@ -15,7 +15,6 @@ steps:
         && go test -vet=all ./... \
         && ko build -B --platform=linux/amd64 --image-refs=.image.txt . \
         && chmod +r .image.txt
-      # && staticcheck ./... \
 
   - id: sign
     name: "gcr.io/projectsigstore/cosign"
