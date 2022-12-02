@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.2.3
 	github.com/iand/logfmtr v0.2.1
 	go.seankhliao.com/webstyle v0.5.4
-	golang.org/x/exp v0.0.0-20221114191408-850992195362
+	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9
 	golang.org/x/oauth2 v0.2.0
 	golang.org/x/term v0.2.0
 	google.golang.org/api v0.103.0
