@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.4.3
 	github.com/go-logr/logr v1.2.3
 	github.com/iand/logfmtr v0.2.1
-	go.seankhliao.com/webstyle v0.5.4
+	go.seankhliao.com/webstyle v0.5.5
 	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9
 	golang.org/x/oauth2 v0.2.0
 	golang.org/x/term v0.2.0
