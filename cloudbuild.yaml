@@ -1,6 +1,6 @@
 steps:
   - id: build-push
-    name: "us-central1-docker.pkg.dev/com-seankhliao/build/gotip"
+    name: 'ghcr.io/seankhliao/go:tip'
     waitFor: ["-"]
     entrypoint: "sh"
     env:
