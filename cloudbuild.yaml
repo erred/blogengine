@@ -4,17 +4,16 @@ steps:
     waitFor: ["-"]
     entrypoint: "sh"
     env:
-      - "CGO_ENABLED=0"
-      - "GOFLAGS=-trimpath"
       - "KO_DOCKER_REPO=${_REGISTRY}"
       - "GGCR_EXPERIMENT_ESTARGZ=1"
     args:
       - "-c"
       - |
-        set -ex \
-        && go test -vet=all ./... \
-        && ko build -B --platform=linux/amd64 --image-refs=.image.txt . \
-        && chmod +r .image.txt
+        set -ex && \
+        go test -vet=all ./... && \
+        staticcheck ./... && \
+        ko build -B --platform=linux/amd64 --image-refs=.image.txt . && \
+        chmod +r .image.txt
 
   - id: sign
     name: "gcr.io/projectsigstore/cosign"
