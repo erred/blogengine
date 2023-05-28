@@ -1,6 +1,6 @@
 steps:
   - id: build-push
-    name: 'ghcr.io/seankhliao/go:tip'
+    name: "ghcr.io/seankhliao/go:tip"
     waitFor: ["-"]
     entrypoint: "sh"
     env:
